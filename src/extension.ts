@@ -5,7 +5,6 @@ import { readFileSync } from "fs";
 
 let GLOBAL_FLAGS = {
   JITO_IGNORED: false,
-  BROWSER_OPEN: false,
 };
 
 const updateGitIgnoreFile = async (root: vscode.Uri) => {
@@ -80,16 +79,6 @@ export default Jito;
   const newContent = new TextEncoder().encode(newText);
 
   await vscode.workspace.fs.writeFile(file, newContent);
-};
-
-const openBrowser = async () => {
-  if (GLOBAL_FLAGS.BROWSER_OPEN) {
-    return;
-  }
-
-  vscode.commands.executeCommand("simpleBrowser.show");
-
-  GLOBAL_FLAGS.BROWSER_OPEN = true;
 };
 
 export function activate(context: vscode.ExtensionContext) {
