@@ -4,8 +4,7 @@ import { posix, relative, parse, join } from "path";
 function removeFileExtension(filePath: string): string {
   const parsedPath = parse(filePath);
 
-  // Modify the base name to remove the extension
-  const newName = parsedPath.name; // This is the file name without extension
+  const newName = parsedPath.name;
   const newPath = join(parsedPath.dir, newName);
 
   return newPath;
