@@ -84,29 +84,28 @@ export default Jito;
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "jitoo" is now active!');
 
-  const disposable = vscode.commands.registerCommand("jito.setup", async () => {
+  const setup = vscode.commands.registerCommand("jito.setup", async () => {
     const root = vscode.workspace.workspaceFolders![0]!.uri;
 
     generateJitoPage(root);
   });
 
-  context.subscriptions.push(disposable);
-  context.subscriptions.push(
-    vscode.commands.registerCommand("jito.preview", () => {
-      const panel = vscode.window.createWebviewPanel(
-        "jitoWebView",
-        "Jito Component Preview",
-        vscode.ViewColumn.One,
-        {
-          enableScripts: true,
-        }
-      );
-      const htmlPath = path.join(context.extensionPath, "src", "preview.html");
-      const htmlContent = readFileSync(htmlPath, "utf8");
-      // And set its HTML content
-      panel.webview.html = htmlContent;
-    })
-  );
+  const preview = vscode.commands.registerCommand("jito.preview", () => {
+    const panel = vscode.window.createWebviewPanel(
+      "jitoWebView",
+      "Jito Component Preview",
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+      }
+    );
+    const htmlPath = path.join(context.extensionPath, "src", "preview.html");
+    const htmlContent = readFileSync(htmlPath, "utf8");
+    // And set its HTML content
+    panel.webview.html = htmlContent;
+  });
+
+  context.subscriptions.push(setup, preview);
 }
 
 export function deactivate() {}
