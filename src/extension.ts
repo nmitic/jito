@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { posix, relative, parse, join } from "path";
+import path, { posix, relative } from "path";
 import { removeFileExtension } from "./utils";
+import { readFileSync } from "fs";
 
 let GLOBAL_FLAGS = {
   JITO_IGNORED: false,
@@ -92,18 +93,31 @@ const openBrowser = async () => {
 };
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "jito" is now active!');
+  console.log('Congratulations, your extension "jitoo" is now active!');
 
-  const disposable = vscode.commands.registerCommand("jito.jito", async () => {
+  const disposable = vscode.commands.registerCommand("jito.setup", async () => {
     const root = vscode.workspace.workspaceFolders![0]!.uri;
 
     generateJitoPage(root);
-    updateGitIgnoreFile(root);
-
-    openBrowser();
   });
 
   context.subscriptions.push(disposable);
+  context.subscriptions.push(
+    vscode.commands.registerCommand("jito.preview", () => {
+      const panel = vscode.window.createWebviewPanel(
+        "jitoWebView",
+        "Jito Component Preview",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+        }
+      );
+      const htmlPath = path.join(context.extensionPath, "src", "preview.html");
+      const htmlContent = readFileSync(htmlPath, "utf8");
+      // And set its HTML content
+      panel.webview.html = htmlContent;
+    })
+  );
 }
 
 export function deactivate() {}

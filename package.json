@@ -14,19 +14,14 @@
   "contributes": {
     "commands": [
       {
-        "command": "jito.jito",
-        "title": "Generate preview component"
+        "command": "jito.setup",
+        "title": "Jito: Setup Jito files"
+      },
+      {
+        "command": "jito.preview",
+        "title": "Jito: Preview component"
       }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "jito.jito",
-          "when": "editorHasSelection",
-          "group": "navigation"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
