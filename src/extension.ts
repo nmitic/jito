@@ -1,14 +1,6 @@
 import * as vscode from "vscode";
 import { posix, relative, parse, join } from "path";
-
-function removeFileExtension(filePath: string): string {
-  const parsedPath = parse(filePath);
-
-  const newName = parsedPath.name;
-  const newPath = join(parsedPath.dir, newName);
-
-  return newPath;
-}
+import { removeFileExtension } from "./utils";
 
 let GLOBAL_FLAGS = {
   JITO_IGNORED: false,
