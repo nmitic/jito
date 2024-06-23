@@ -105,7 +105,12 @@ export function activate(context: vscode.ExtensionContext) {
     panel.webview.html = htmlContent;
   });
 
-  context.subscriptions.push(setup, preview);
+  const jito = vscode.commands.registerCommand("jito.start", async () => {
+    await vscode.commands.executeCommand("jito.setup");
+    await vscode.commands.executeCommand("jito.preview");
+  });
+
+  context.subscriptions.push(setup, preview, jito);
 }
 
 export function deactivate() {}
