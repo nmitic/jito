@@ -80,7 +80,9 @@ function getAllComponentName(node: ts.Node): string[] {
   return componentNames;
 }
 
-const generateJitoPage = async (root: vscode.Uri) => {
+const generateJitoPage = async (componentName: string) => {
+  const root = vscode.workspace.workspaceFolders![0]!.uri;
+
   const tmpl = `
 "use client"
 
@@ -100,9 +102,7 @@ export default Jito;
 
   const componentFilePath = vscode.window.activeTextEditor?.document.uri
     .path as string;
-  const userTextSelection = vscode.window.activeTextEditor?.selection;
-  const componentName =
-    vscode.window.activeTextEditor?.document.getText(userTextSelection);
+
   const componentImportPath = removeFileExtension(
     relative(folder.path, componentFilePath)
   );
@@ -132,10 +132,6 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "jitoo" is now active!');
 
   const setup = vscode.commands.registerCommand("jito.setup", async () => {
-    const root = vscode.workspace.workspaceFolders![0]!.uri;
-
-    generateJitoPage(root);
-
     function getAst(filePath: string) {
       // Read the file content
       const fileContent = readFileSync(filePath, "utf8");
@@ -158,7 +154,19 @@ export function activate(context: vscode.ExtensionContext) {
     const ast = getAst(filePath);
 
     const allComponentNames = getAllComponentName(ast);
+
     console.log(allComponentNames);
+
+    const selectedOption = await vscode.window.showQuickPick(
+      allComponentNames,
+      {
+        placeHolder: "Select an option",
+      }
+    );
+
+    if (selectedOption) {
+      generateJitoPage(selectedOption);
+    }
   });
 
   const preview = vscode.commands.registerCommand("jito.preview", () => {

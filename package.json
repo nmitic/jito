@@ -25,16 +25,7 @@
         "command": "jito.start",
         "title": "Jito: Start"
       }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "jito.start",
-          "when": "editorHasSelection",
-          "group": "navigation"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
