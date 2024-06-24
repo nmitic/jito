@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import path, { posix, relative } from "path";
 import { removeFileExtension } from "./utils";
 import { readFileSync } from "fs";
+import * as ts from "typescript";
 
 let GLOBAL_FLAGS = {
   JITO_IGNORED: false,
@@ -32,6 +33,52 @@ app/jito/page.tsx
 
   GLOBAL_FLAGS.JITO_IGNORED = true;
 };
+
+function getAllComponentName(node: ts.Node): string[] {
+  const componentNames: string[] = [];
+
+  function isJSXElement(node: ts.Node): boolean {
+    return ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node);
+  }
+
+  function containsJSX(node: ts.Node): boolean {
+    let contains = false;
+    function visit(n: ts.Node) {
+      if (isJSXElement(n)) {
+        contains = true;
+      }
+      ts.forEachChild(n, visit);
+    }
+    visit(node);
+    return contains;
+  }
+
+  function visit(node: ts.Node) {
+    if (
+      ts.isVariableStatement(node) &&
+      node.declarationList.declarations.length > 0
+    ) {
+      const declaration = node.declarationList.declarations[0];
+      if (
+        ts.isVariableDeclaration(declaration) &&
+        declaration.name &&
+        ts.isIdentifier(declaration.name) &&
+        declaration.initializer &&
+        ts.isFunctionLike(declaration.initializer)
+      ) {
+        const functionToCheckIfItIsReactComponent = declaration.initializer;
+        if (containsJSX(functionToCheckIfItIsReactComponent)) {
+          componentNames.push(declaration.name.text);
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(node);
+
+  return componentNames;
+}
 
 const generateJitoPage = async (root: vscode.Uri) => {
   const tmpl = `
@@ -88,6 +135,30 @@ export function activate(context: vscode.ExtensionContext) {
     const root = vscode.workspace.workspaceFolders![0]!.uri;
 
     generateJitoPage(root);
+
+    function getAst(filePath: string) {
+      // Read the file content
+      const fileContent = readFileSync(filePath, "utf8");
+
+      // Parse the file content to generate the AST
+      const sourceFile = ts.createSourceFile(
+        filePath,
+        fileContent,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TSX
+      );
+
+      return sourceFile;
+    }
+
+    const filePath = path.join(
+      vscode.window.activeTextEditor?.document.uri.fsPath as string
+    );
+    const ast = getAst(filePath);
+
+    const allComponentNames = getAllComponentName(ast);
+    console.log(allComponentNames);
   });
 
   const preview = vscode.commands.registerCommand("jito.preview", () => {
