@@ -54,24 +54,40 @@ function getAllComponentName(node: ts.Node): string[] {
   }
 
   function visit(node: ts.Node) {
+    // Check for variable declarations (const/let/var)
     if (
       ts.isVariableStatement(node) &&
       node.declarationList.declarations.length > 0
     ) {
-      const declaration = node.declarationList.declarations[0];
-      if (
-        ts.isVariableDeclaration(declaration) &&
-        declaration.name &&
-        ts.isIdentifier(declaration.name) &&
-        declaration.initializer &&
-        ts.isFunctionLike(declaration.initializer)
-      ) {
-        const functionToCheckIfItIsReactComponent = declaration.initializer;
-        if (containsJSX(functionToCheckIfItIsReactComponent)) {
-          componentNames.push(declaration.name.text);
+      node.declarationList.declarations.forEach((declaration) => {
+        if (
+          ts.isVariableDeclaration(declaration) &&
+          declaration.name &&
+          ts.isIdentifier(declaration.name)
+        ) {
+          if (
+            declaration.initializer &&
+            (ts.isArrowFunction(declaration.initializer) ||
+              ts.isFunctionExpression(declaration.initializer))
+          ) {
+            const func = declaration.initializer;
+            if (containsJSX(func)) {
+              componentNames.push(declaration.name.text);
+            }
+          }
+        }
+      });
+    }
+
+    // Check for function declarations
+    if (ts.isFunctionDeclaration(node)) {
+      if (node.name && ts.isIdentifier(node.name)) {
+        if (containsJSX(node)) {
+          componentNames.push(node.name.text);
         }
       }
     }
+
     ts.forEachChild(node, visit);
   }
 
